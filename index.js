@@ -52,7 +52,7 @@ async function generateTweetText(imagePrompt) {
     model: "gpt-4",
     messages: [
       { "role": "system", "content": "You are a creative AI specialized in generating concise, engaging tweets with hashtags for posts featuring concept images for Galaxy Royale: Ikinokoru." },
-      { "role": "user", "content": `Create a tweet for an image described as: "${imagePrompt}"` }
+      { "role": "user", "content": `Create a tweet for an image described as: "${imagePrompt}"` } 
     ],
     max_tokens: 50
   });
