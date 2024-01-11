@@ -15,9 +15,18 @@ const twitterClient = new TwitterApi({
 
 // Define an array of prompts
 const imagePrompts = [
-    "A game asset concept image of a 3d low poly battle jet in anime style art flying in outer-space amongst the stars and cosmos in the distance.",
-    "A game asset concept image of a ai robot space species that have a crystal in their forehead, in anime/manga style art.",
-    "A game asset concept image of a red blue and green crystals from space in all shapes and sizes,some glow some are dead, in anime/manga style art."
+    // Low Poly Battle Jet in Space:
+    "Low poly 3D anime-style battle jet flying in outer space, surrounded by stars and cosmic elements.",
+    // AI Robot with Crystal Forehead:
+    "Anime-style AI robot with a crystal in the forehead, depicting futuristic and advanced design.",
+    // Assorted Space Crystals:
+    "Variety of low poly 3D red, blue, and green space crystals, some glowing and some dormant, in anime style.",
+    // Six Different Spaceships:
+    "Six distinct top-down spaceship designs in low poly 3D anime style, suitable for game assets.",
+    // Floating Space Pagodas:
+    "Low poly 3D anime-style floating space pagodas with docks and hubs, set against a space backdrop.",
+    // Vast Galaxies:
+    "Expansive low poly 3D anime-style galaxies with swirling stars, colorful nebulas, and celestial bodies."
   ];
 
 // Function to generate an image using DALL-E 3
@@ -54,7 +63,7 @@ async function generateTweetText(imagePrompt) {
       { "role": "system", "content": "You are a creative AI specialized in generating concise, engaging tweets with hashtags for posts featuring concept images for Galaxy Royale: Ikinokoru." },
       { "role": "user", "content": `Create a tweet for an image described as: "${imagePrompt}"` } 
     ],
-    max_tokens: 50
+    max_tokens: 40
   });
   return gptResponse.choices[0].message.content.trim();
 }
@@ -72,8 +81,8 @@ exports.handler = async (event) => {
 
     const tweetText = await generateTweetText(imagePrompt);
 
-    // Add a prefix to the tweet text
-    const finalTweetText = `Galaxy Royale: Ikinokoru - AI CONCEPT ART: ${tweetText}`;
+    // Add a prefix and affix to the tweet text
+    const finalTweetText = `Galaxy Royale: Ikinokoru - AI CONCEPT INSPIRATION: "${tweetText}" #gamedev #indiedev #conceptart #aiart #dalle3 #galaxyroyale #ikinokoru`;
 
     const mediaId = await twitterClient.v1.uploadMedia(imagePath);
     const tweetResponse = await twitterClient.v2.tweet(finalTweetText, { media: { media_ids: [mediaId] } });
