@@ -3,6 +3,7 @@ const { TwitterApi } = require('twitter-api-v2');
 const OpenAI = require('openai');
 const axios = require('axios');
 const fs = require('fs');
+const sharp = require('sharp');
 
 // Initialize OpenAI and Twitter API clients
 const openai = new OpenAI({ api_key: process.env.OPENAI_API_KEY });
@@ -13,20 +14,19 @@ const twitterClient = new TwitterApi({
   accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET
 });
 
-// Define an array of prompts
+// Array of prompts
 const imagePrompts = [
-    // Low Poly Battle Jet in Space:
-    "Low poly 3D anime-style battle jet flying in outer space, surrounded by stars and cosmic elements.",
-    // AI Robot with Crystal Forehead:
-    "Anime-style AI robot with a crystal in the forehead, depicting futuristic and advanced design.",
-    // Assorted Space Crystals:
-    "Variety of low poly 3D red, blue, and green space crystals, some glowing and some dormant, in anime style.",
-    // Six Different Spaceships:
-    "Six distinct top-down spaceship designs in low poly 3D anime style, suitable for game assets.",
-    // Floating Space Pagodas:
-    "Low poly 3D anime-style floating space pagodas with docks and hubs, set against a space backdrop.",
-    // Vast Galaxies:
-    "Expansive low poly 3D anime-style galaxies with swirling stars, colorful nebulas, and celestial bodies."
+    "2D Game Asset Pack, Mulitple Pixel Characters",
+
+    "2D Game Asset Pack, Multiple Pixel items and and objects",
+
+    "2D Game Asset Pack, Multiple Pixel scenarios and backgrounds",
+
+    "2D Game Asset Pack, Multiple Pixel UI elements and icons",
+
+    "2D Game Asset Pack, Multiple Pixel Monsters and Enemies",
+
+    "2D Game Asset Pack, Multiple Pixel fonts and text",
   ];
 
 // Function to generate an image using DALL-E 3
@@ -35,10 +35,19 @@ async function generateImage(prompt) {
     prompt: prompt,
     n: 1,
     size: "1024x1024",
+    quality: "hd",
     model: "dall-e-3"
   });
   const imageUrl = response.data[0].url;
   return imageUrl;
+}
+
+// Function to resize and compress image
+async function resizeAndCompressImage(imagePath, outputImagePath) {
+  await sharp(imagePath)
+      .resize({ width: 1200, withoutEnlargement: true }) // Resize to width of 1200px
+      .jpeg({ quality: 80 }) // Convert to JPEG format with quality 80
+      .toFile(outputImagePath);
 }
 
 // Function to download and save image locally
@@ -60,8 +69,8 @@ async function generateTweetText(imagePrompt) {
   const gptResponse = await openai.chat.completions.create({
     model: "gpt-4",
     messages: [
-      { "role": "system", "content": "You are a creative AI specialized in generating concise, engaging tweets with hashtags for posts featuring concept images for Galaxy Royale: Ikinokoru." },
-      { "role": "user", "content": `Create a tweet for an image described as: "${imagePrompt}"` } 
+      { "role": "system", "content": "You are a creative AI specialized in generating a short engaging title, for tweets and add 4 hashtags for posts featuring images of an AI generated 2D Game Asset packs for free." },
+      { "role": "user", "content": `Create a short tweet title for our free game asset pack described as: "${imagePrompt}"` } 
     ],
     max_tokens: 40
   });
@@ -79,12 +88,16 @@ exports.handler = async (event) => {
     await downloadImage(imageUrl, imagePath);
     console.log('Image generated with URL:', imageUrl);
 
+    // Resize and compress the image  
+    const resizedImagePath = '/tmp/resized-image.jpg';
+    await resizeAndCompressImage(imagePath, resizedImagePath);
+
     const tweetText = await generateTweetText(imagePrompt);
 
     // Add a prefix and affix to the tweet text
-    const finalTweetText = `Galaxy Royale: Ikinokoru - AI CONCEPT INSPIRATION: "${tweetText}" #gamedev #indiedev #conceptart #aiart #dalle3 #galaxyroyale #ikinokoru`;
+    const finalTweetText = `🎮 FREE AI GENERATED GAME ASSET PACKS: ${tweetText} FOLLOW FOR MORE DAILY! 🚀`;
 
-    const mediaId = await twitterClient.v1.uploadMedia(imagePath);
+    const mediaId = await twitterClient.v1.uploadMedia(resizedImagePath);
     const tweetResponse = await twitterClient.v2.tweet(finalTweetText, { media: { media_ids: [mediaId] } });
 
     if (tweetResponse && tweetResponse.data) {
