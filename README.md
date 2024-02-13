@@ -18,8 +18,8 @@ This project is an AWS Lambda function designed to generate and tweet daily AI-g
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/ai-game-art-bot.git
-cd ai-game-art-bot
+git clone https://github.com/itchson/dalle3-x-post.git
+cd dalle3-x-post
 ```
 
 ### Install Dependencies
