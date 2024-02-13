@@ -3,7 +3,6 @@ const { TwitterApi } = require('twitter-api-v2');
 const OpenAI = require('openai');
 const axios = require('axios');
 const fs = require('fs');
-const sharp = require('sharp');
 
 // Initialize OpenAI and Twitter API clients
 const openai = new OpenAI({ api_key: process.env.OPENAI_API_KEY });
@@ -42,14 +41,6 @@ async function generateImage(prompt) {
   return imageUrl;
 }
 
-// Function to resize and compress image
-async function resizeAndCompressImage(imagePath, outputImagePath) {
-  await sharp(imagePath)
-      .resize({ width: 1200, withoutEnlargement: true }) // Resize to width of 1200px
-      .jpeg({ quality: 80 }) // Convert to JPEG format with quality 80
-      .toFile(outputImagePath);
-}
-
 // Function to download and save image locally
 async function downloadImage(url, path) {
   const response = await axios({
@@ -84,20 +75,16 @@ exports.handler = async (event) => {
     console.log('Generating image with prompt:', imagePrompt);
     const imageUrl = await generateImage(imagePrompt);
     console.log('Image generated with URL:', imageUrl);
-    const imagePath = '/tmp/image.png';
+    const imagePath = '/tmp/image.jpg';
     await downloadImage(imageUrl, imagePath);
     console.log('Image generated with URL:', imageUrl);
-
-    // Resize and compress the image  
-    const resizedImagePath = '/tmp/resized-image.jpg';
-    await resizeAndCompressImage(imagePath, resizedImagePath);
 
     const tweetText = await generateTweetText(imagePrompt);
 
     // Add a prefix and affix to the tweet text
     const finalTweetText = `🎮 FREE AI GENERATED GAME ASSET PACKS: ${tweetText} FOLLOW FOR MORE DAILY! 🚀`;
 
-    const mediaId = await twitterClient.v1.uploadMedia(resizedImagePath);
+    const mediaId = await twitterClient.v1.uploadMedia(imagePath);
     const tweetResponse = await twitterClient.v2.tweet(finalTweetText, { media: { media_ids: [mediaId] } });
 
     if (tweetResponse && tweetResponse.data) {
