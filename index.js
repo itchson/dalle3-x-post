@@ -16,15 +16,10 @@ const twitterClient = new TwitterApi({
 // Array of prompts
 const imagePrompts = [
     "2D Game Asset Pack, Mulitple Pixel Characters",
-
     "2D Game Asset Pack, Multiple Pixel items and and objects",
-
     "2D Game Asset Pack, Multiple Pixel scenarios and backgrounds",
-
     "2D Game Asset Pack, Multiple Pixel UI elements and icons",
-
     "2D Game Asset Pack, Multiple Pixel Monsters and Enemies",
-
     "2D Game Asset Pack, Multiple Pixel fonts and text",
   ];
 
@@ -33,7 +28,7 @@ async function generateImage(prompt) {
   const response = await openai.images.generate({
     prompt: prompt,
     n: 1,
-    size: "1024x1024",
+    size: "1792x1024",
     quality: "hd",
     model: "dall-e-3"
   });
@@ -58,7 +53,7 @@ async function downloadImage(url, path) {
 // Function to generate tweet text
 async function generateTweetText(imagePrompt) {
   const gptResponse = await openai.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-4o",
     messages: [
       { "role": "system", "content": "You are a creative AI specialized in generating a short engaging title, for tweets and add 4 hashtags for posts featuring images of an AI generated 2D Game Asset packs for free." },
       { "role": "user", "content": `Create a short tweet title for our free game asset pack described as: "${imagePrompt}"` } 
@@ -82,7 +77,7 @@ exports.handler = async (event) => {
     const tweetText = await generateTweetText(imagePrompt);
 
     // Add a prefix and affix to the tweet text
-    const finalTweetText = `🎮 FREE AI GENERATED GAME ASSET PACKS: ${tweetText} FOLLOW FOR MORE DAILY! 🚀`;
+    const finalTweetText = `🎮 AI GENERATED GAME ASSET PACKS FOR INSPIRATION: ${tweetText} FOLLOW FOR MORE DAILY! 🚀`;
 
     const mediaId = await twitterClient.v1.uploadMedia(imagePath);
     const tweetResponse = await twitterClient.v2.tweet(finalTweetText, { media: { media_ids: [mediaId] } });
